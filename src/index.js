@@ -16,25 +16,27 @@ app.get("/courses", (request, response) => {
 });
 
 app.post("/courses", (request, response) => {
-  const newCourse = {
+  const { name, day} = request.body;
+  courses.push({
     id: courses.length + 1,
-    name: request.body["name"],
-    day: request.body["day"]
-  };
-  courses.push(newCourse);
+    name,
+    day
+  });
   return response.json(courses);
 });
 
 app.put("/courses/:id", (request, response) => {
-  let course  = courses[courses.findIndex(course => course.id == request.params["id"])];
-  course.name = request.body["name"];
-  course.day  = request.body["day"];
+  const { id } = request.params;
+  const { name, day } = request.body;
+  const course  = courses[courses.findIndex(course => course.id === parseInt(id))];
+  Object.assign(course, { name, day });
   return response.json(courses);
 });
 
 app.patch("/courses/:id/new-name/:name", (request, response) => {
-  let course  = courses[courses.findIndex(course => course.id == request.params["id"])];
-  course.name = request.params["name"];
+  const { id, name } = request.params;
+  const course  = courses[courses.findIndex(course => course.id === parseInt(id))];
+  Object.assign(course, { name });
   return response.json(courses);
 });
 
@@ -42,14 +44,12 @@ app.delete("/courses/:id", (request, response) => {
   if(!courses.length) {
     return response.json('No classes were found, try to insert some!');
   }
-  const auxCourses = Object.entries(courses).filter(([key, value]) => {
-    return value["id"] != request.params["id"];
-  });
-  courses = [];
-  Object.entries(auxCourses).map(([key, value]) => {
-    courses.push({id: value[1]["id"], name: value[1]["name"]});
-  });
+  const { id } = request.params;
+  const courseIndex = courses.findIndex(course => course.id === parseInt(id));
+  courses.splice(courseIndex, 1);
   return response.json(courses);
 });
 
-app.listen(3333);
+app.listen(3333, () => {
+  console.log('Server is running');
+});
